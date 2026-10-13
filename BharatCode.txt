@@ -1,0 +1,50 @@
+AI StudyMate
+BharatCode Build League entry — Learning & education
+
+WHAT THIS PROJECT IS
+AI StudyMate is a web app that helps college and school students understand difficult topics, practise with quizzes, keep a study schedule, and organise notes in one place.
+
+PROBLEM IT SOLVES
+Students often jump between chatbots, notebooks, calendars, and random quiz sites. That makes it hard to stay consistent. AI StudyMate combines explanation, practice, planning, and notes in a single dashboard so a student can learn a topic, test themselves, and plan the next session without leaving the app.
+
+INTENDED USERS
+- College and school students preparing for exams
+- Beginners who want simpler explanations of class topics
+- Hackathon judges and classmates reviewing a working study companion
+
+MAIN FEATURES
+- Dashboard with greeting, study statistics, progress, recent activity, and quick actions
+- AI Study Assistant: choose subject, topic, and difficulty; get a simple explanation, formulas, examples, common mistakes, and follow-up questions
+- Subjects include physics, mathematics, electronics, computer science, programming, and other school/college areas
+- Quiz Generator: multiple-choice questions, answer selection, score, explanations, and retry
+- Study Planner: add, edit, delete, and complete tasks with subject, due date, and priority
+- Notes: create, edit, delete, and search
+- Settings: display name, theme (light / dark / system), daily study goal, and local data reset
+- Local storage for tasks, notes, preferences, quiz history, and activity so data survives a page refresh
+- Form validation, toast notifications, responsive sidebar, and working buttons on laptop and mobile
+
+BHARATCODE MODEL INTEGRATION (PREPARED; LIVE CALLS NEED A KEY)
+The Node.js Express backend is written against official BharatCode Model API documentation (https://bharatcode.ai/build):
+
+- Base URL: https://bharatcode.ai/api/model/v1
+- Authentication: Authorization: Bearer <BHARATCODE_API_KEY>
+- Key source: server-side environment variable only (never in frontend code or this file)
+- Developer keys: https://bharatcode.ai/account
+- Default model ID: qwen-3.8-27b (coding, reasoning; student / Lite / Pro access)
+- Optional Pro model ID: deepseek-v4.1-flash (documented as Pro-only; not the default)
+- Endpoints used by this project:
+  - GET /models — confirm eligible model IDs
+  - POST /chat/completions — explanations and quiz JSON using OpenAI-compatible messages
+- The model field is required on every generation request
+- Keys stay on the server. The React app only calls this project's /api routes
+
+UNTIL CREDENTIALS ARE CONFIGURED
+If BHARATCODE_API_KEY is missing, the app runs in a clearly labelled Demo Mode. Demo Mode uses local study content (including dedicated articles such as Ohm's Law: V = I × R) so the interface can be tested without a live key. Demo Mode is not the BharatCode model. Live generation is only claimed after a real key is added and a request to the official API succeeds.
+
+HOW TO RUN
+See README.md for Windows commands, local testing steps, port conflict guidance, and how to publish this repo on GitHub. Do not put secrets, tokens, or private user data in this file or in the public repository.
+
+HACKATHON NOTES
+Category: Learning & education (tutor / practice partner / study companion).
+Official listing: https://bharatcode.ai/hackathon
+Publish a public GitHub repository with this BharatCode.txt file in the repo root, then submit the GitHub URL on the hackathon page. Applications close 25 October 2026, 11:59 PM IST, according to the official page.
