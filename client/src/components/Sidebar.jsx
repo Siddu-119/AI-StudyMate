@@ -52,7 +52,11 @@ export default function Sidebar({ open, onClose }) {
       </nav>
       <div className={`mode-chip ${aiStatus.mode}`}>
         <span className="dot" />
-        {aiStatus.mode === "live" ? "Live BharatCode API" : "Demo Mode"}
+        {aiStatus.mode === "live"
+          ? "Live Google Gemini"
+          : aiStatus.mode === "demo"
+            ? "Demo Mode"
+            : "AI not configured"}
       </div>
     </aside>
   );

@@ -1,221 +1,146 @@
 # AI StudyMate
 
-An AI-powered student assistant built for the **BharatCode Build League**. It helps students understand difficult topics, generate quizzes, plan study tasks, and keep notes in one place.
+AI StudyMate is a student study companion prepared for the **BharatCode Build League**. It brings topic explanations, quiz practice, study planning, and notes into one React application.
 
-This repository already contains the complete frontend and backend. You do not need to create extra source files to run it.
+## Problem and intended users
 
-## Problem and users
+Students often switch among chatbots, notebooks, calendars, and quiz sites. AI StudyMate gives school and college students one place to review a topic, practise it, plan their next session, and organise their notes.
 
-Students bounce between chatbots, notebooks, calendars, and random quiz sites. AI StudyMate keeps explanation, practice, planning, and notes in one dashboard for school and college students preparing for exams.
+## Features
 
-## What you get
+- Dashboard with greeting, study statistics, progress, activity, and quick actions
+- Topic explanations, formulas, examples, common mistakes, study tips, and follow-up questions
+- Multiple-choice quiz generation, answer checking, scoring, explanations, and retry
+- Planner tasks with due dates, priorities, edit, completion, and delete actions
+- Notes with create, edit, delete, and text search
+- Profile settings, daily study goal, light/dark/system theme, and local-data reset
+- Responsive navigation and browser-local storage for study data
+- Explicit, labelled offline Demo Mode using bundled sample learning content
 
-- Student dashboard with greeting, statistics, progress, activity, and quick actions
-- AI Study Assistant for physics, mathematics, electronics, computer science, programming, and other subjects
-- Quiz generator (multiple choice, scoring, explanations, retry)
-- Study planner (add, edit, delete, complete; subject, due date, priority)
-- Notes (create, edit, delete, search)
-- Settings with light / dark / system theme
-- Local browser storage so tasks, notes, and preferences survive a refresh
-- Express backend prepared for the official BharatCode Model API
-- **Demo Mode** when no API key is configured (clearly labelled in the app)
+## Technology and architecture
 
-Demo Mode includes dedicated study articles for common topics such as Ohm's Law (`V = I × R`), Newton's laws, Kirchhoff's laws, binary search, SQL joins, the quadratic formula, and others. Unmatched topics stay labelled as demo outlines, not as live model answers.
+- React 18, React Router 6, and Vite
+- Node.js 20+ and Express 4
+- Google Gemini through the server-side `@google/genai` SDK
+- Browser `localStorage` for notes, planner, settings, activity, and quiz history
 
-## Official BharatCode API (do not invent these)
+The browser sends requests to `/api/...`. In development, Vite proxies them to Express. In production, either route `/api` to the Express service on the same origin or set the frontend build variable `VITE_API_URL` to the backend origin and allow the frontend origin in the backend's `CLIENT_ORIGIN` setting. The Gemini key is read only by the server and is never included in API status or browser responses.
 
-From [BharatCode Build docs](https://bharatcode.ai/build):
+## AI configuration and Demo Mode
 
-| Item | Value |
-| --- | --- |
-| Base URL | `https://bharatcode.ai/api/model/v1` |
-| Auth | `Authorization: Bearer <BHARATCODE_API_KEY>` |
-| Key | Server environment variable only |
-| Default model | `qwen-3.8-27b` |
-| Pro model | `deepseek-v4.1-flash` (Pro only; not used by default) |
-| List models | `GET /models` |
-| Generate | `POST /chat/completions` with `model` and `messages` |
+The default configured model is `gemini-2.5-flash`, which appears in Google's [Gemini API model list](https://ai.google.dev/gemini-api/docs/models). Create a key through [Google AI Studio](https://aistudio.google.com/) and set it in `server/.env`:
 
-Get a developer key from [https://bharatcode.ai/account](https://bharatcode.ai/account). **Never put the key in frontend code, `BharatCode.txt`, or GitHub.**
-
-Until a real key is in `server/.env`, explanations and quizzes run in **Demo Mode**. Demo Mode is local study content. It is not a live BharatCode model call.
-
-Live generation is only claimed after a real key is added and a request to the official API succeeds. That live path was **not** claimed as tested in this workspace, because no personal API key was used here.
-
-## Folder layout
-
-```
-AI-StudyMate/
-  BharatCode.txt      hackathon project description (no secrets)
-  README.md
-  .env.example
-  .gitignore
-  package.json        runs frontend + backend together
-  client/             React + Vite app
-  server/             Node.js + Express API
+```dotenv
+GEMINI_API_KEY=your_gemini_api_key_here
+GEMINI_MODEL=gemini-2.5-flash
+AI_DEMO_MODE=false
 ```
 
-## Technology stack
+Keep the key on the server. Do not put secrets in frontend `VITE_*` variables or commit `.env` files.
 
-- React 18, React Router, Vite
-- Express, CORS, dotenv
-- BharatCode Model API when `BHARATCODE_API_KEY` is set
-- Browser `localStorage` for notes, planner, settings, and quiz history
+Demo Mode is opt-in and is **not** a live model response:
 
-## Windows: run it locally
+```dotenv
+AI_DEMO_MODE=true
+```
 
-Use **PowerShell** or **Command Prompt**. Install [Node.js LTS](https://nodejs.org/) first (includes `npm`).
+When enabled, the API serves clearly labelled bundled explanations, quizzes, and follow-up examples without contacting Gemini, even when a key exists. When Demo Mode is off and there is no key, AI status is `unconfigured` and generation returns an explicit configuration error; it does not fabricate success. The app does not automatically switch to demo content when live generation fails. A 429 response is not automatically retried; inspect the provider quota and retry only when appropriate. Transient failures may receive one bounded retry using provider retry guidance.
 
-1. Open the project folder:
+The key's validity, account access, and current quota must be checked with the account owner. A key being present does not prove live generation works.
+
+## Windows setup and local run
+
+Install [Node.js LTS](https://nodejs.org/) (Node.js 20 or newer), then use PowerShell:
 
 ```powershell
 cd D:\diploma\Projects\AI-StudyMate
-```
-
-2. Install dependencies (root, server, and client):
-
-```powershell
 npm run setup
+if (-not (Test-Path server\.env)) { Copy-Item .env.example server\.env } else { Write-Host "Keeping existing server\.env unchanged." }
 ```
 
-If `npm run setup` fails, run these three installs yourself:
-
-```powershell
-npm install
-cd server
-npm install
-cd ..\client
-npm install
-cd ..
-```
-
-3. Create the server env file (Demo Mode works with an empty key):
-
-```powershell
-copy .env.example server\.env
-```
-
-4. Start frontend and backend together:
+The example explicitly enables Demo Mode, so a fresh setup works without a key. For live Gemini requests, add your own key to `server\.env` and set `AI_DEMO_MODE=false`. The setup command above does not overwrite an existing local environment file. Start both services:
 
 ```powershell
 npm run dev
 ```
 
-5. Open the app:
+By default, the website is at `http://localhost:5173`, backend health at `http://localhost:5000/api/health`, and AI status at `http://localhost:5000/api/ai/status`.
 
-- Website: http://localhost:5173
-- Backend health: http://localhost:5000/api/health
-- AI status: http://localhost:5000/api/ai/status
-
-Leave the terminal open while you use the app. Stop it with `Ctrl+C`.
-
-To start the two parts in separate terminals instead:
+To use two terminals instead:
 
 ```powershell
+# Terminal 1
 cd D:\diploma\Projects\AI-StudyMate\server
 npm run dev
 ```
 
 ```powershell
+# Terminal 2
 cd D:\diploma\Projects\AI-StudyMate\client
 npm run dev
 ```
 
-### Port already in use (`EADDRINUSE`)
+`npm run start --prefix server` runs the backend without watch mode; `npm run dev --prefix client` runs Vite.
 
-The backend listens on `PORT` from `server/.env` (default **5000**). If that port is taken, the server prints a diagnostic and exits. It does **not** kill other programs.
+### Port conflicts
 
-1. Set a free port in `server\.env`, for example `PORT=5001`.
-2. Create `client\.env` from `client\.env.example` and set `VITE_API_URL=http://localhost:5001`.
-3. Restart both the backend and the frontend so the Vite proxy matches.
+The backend uses `PORT` from `server/.env` (default `5000`). On `EADDRINUSE`, it reports the conflict and exits without stopping another process. Find and close the process you own, or choose a free port and set the same origin for the Vite proxy:
 
-## How to test (beginner checklist)
-
-1. Dashboard loads with a greeting, stats, and quick-action buttons.
-2. Sidebar opens every page: Dashboard, AI Assistant, Quiz, Planner, Notes, Settings.
-3. On a phone-width window, the menu button opens navigation. Escape closes it.
-4. Theme button in the top bar switches light and dark. Settings can also set System.
-5. Assistant: leave topic empty and click **Explain** — you should see a validation message.
-6. Assistant: enter `Explain Ohm's Law`. You should see **V = I × R** and a **Demo Mode** badge unless a real key is configured.
-7. Use a suggested follow-up chip (for example resistance doubling) or type your own question.
-8. Quiz: generate questions on Ohm's Law, pick answers, check score, read explanations, retry, then create a new quiz.
-9. Planner: add a task, edit it, mark it complete, delete it. Refresh the page — it should still be there (unless deleted).
-10. Notes: create a note, search for a word in it, edit it, delete it.
-11. Settings: change your display name, save preferences, restore sample data, or clear local data.
-12. Stop the backend and retry Explain — you should see a connection error and a Retry button.
-
-## Turn on the real BharatCode model later
-
-This was **not** claimed as a tested live integration in this build, because no personal API key was added.
-
-When you have a key:
-
-1. Open `server\.env` in a text editor.
-2. Set:
-
-```
-BHARATCODE_API_KEY=your_real_key_here
-BHARATCODE_BASE_URL=https://bharatcode.ai/api/model/v1
-BHARATCODE_MODEL=qwen-3.8-27b
+```dotenv
+# server/.env
+PORT=5001
 ```
 
-3. Save the file, restart `npm run dev`, refresh the browser.
-4. The sidebar should say **Live BharatCode API** if the server sees the key.
-5. Generate an explanation. If the official API accepts your account, you will get a live answer. If the API returns an error (wrong key, no student/Lite/Pro access, busy 503, rate limit 429), the app shows that error instead of pretending Demo Mode is live.
+```dotenv
+# client/.env
+VITE_API_URL=http://localhost:5001
+```
 
-## Demo-mode limitations
+Restart both services after changing either setting. The Vite configuration loads `client/.env`; do not add server credentials there.
 
-- Dedicated articles cover a set of common class topics. Other wording gets a labelled subject outline, not a live model.
-- Quizzes for unmatched topics are general checks plus a reminder to use the textbook or a live key.
-- Notes and planner never use the model API; they stay in this browser.
+## Checks and manual feature test
 
-## Upload to a public GitHub repository
-
-Do this only after you can run the app locally. **Do not upload `server/.env`.** `.gitignore` already ignores `.env` files.
-
-In PowerShell, from the project folder:
+Run the available automated checks from the repository root:
 
 ```powershell
-cd D:\diploma\Projects\AI-StudyMate
-git init
-git add .
-git status
+npm run build
+npm run check --prefix server
+npm test --prefix server
 ```
 
-Confirm `.env` is **not** listed. Then:
+The backend tests start on an ephemeral port with explicitly enabled Demo Mode. They exercise health/status, empty-input validation, explanation, quiz response shape, follow-up, malformed JSON, unknown routes, and quota/retry classification. They do not call the live Gemini API.
 
-```powershell
-git commit -m "Add AI StudyMate BharatCode Build League project"
-git branch -M main
-```
+Manual browser checks:
 
-Create an empty **public** repository on GitHub named whatever you like (for example `AI-StudyMate`), then:
+1. Visit `/`, `/assistant`, `/quiz`, `/planner`, `/notes`, and `/settings` directly and navigate using the sidebar.
+2. On Assistant, submit an empty topic, an Ohm's Law explanation, a suggested follow-up, and an empty follow-up.
+3. On Quiz, submit an empty topic, generate a demo quiz, answer all questions, check the score, retry, and start another quiz.
+4. Create, edit, search, and delete a note; create, edit, complete, filter, and delete planner tasks.
+5. Change theme and profile settings, refresh to check persistence, then try the local-data controls.
+6. Stop the backend and verify an actionable connection error; confirm no automatic fake answer appears.
+7. Test both desktop width and a phone-width viewport. At mobile width, open the menu and close it with Escape.
 
-```powershell
-git remote add origin https://github.com/YOUR_GITHUB_USERNAME/YOUR_REPO_NAME.git
-git push -u origin main
-```
+## Deployment readiness
 
-Check that the public repo root contains `BharatCode.txt`. Submit that GitHub URL on the [BharatCode Build League](https://bharatcode.ai/hackathon) page.
+The client is a static Vite build (`npm run build`, output `client/dist`); the server is a separate Node.js process and needs a Node 20+ host. Do not deploy `server/.env` as a public artifact.
 
-Applications close **25 October 2026, 11:59 PM IST** according to the official hackathon page.
+- **Same-origin option:** host the static client and reverse-proxy `/api` requests to the Express service. Set backend `CLIENT_ORIGIN` to the public website origin.
+- **Separate-origin option:** build the client with `VITE_API_URL=https://your-api-host.example`, and set backend `CLIENT_ORIGIN` to the exact frontend origin. The API client uses that configured origin; its production default is relative `/api`, not localhost.
+- Configure `PORT`, `GEMINI_API_KEY`, `GEMINI_MODEL`, `AI_DEMO_MODE`, `AI_REQUEST_TIMEOUT_MS`, and `CLIENT_ORIGIN` through the backend host's environment settings. A host-provided `PORT` is honored.
 
-If Git asks you to sign in, use GitHub login or a personal access token. Never paste your BharatCode API key into the repository, issues, or the `BharatCode.txt` file.
+This repository has not been deployed publicly. Hosting-provider free tiers, quotas, and availability change; compare current terms before choosing a host. Notes, settings, tasks, and activity remain local to each browser and are not backed up to a server.
 
-## Scripts
+## Known limitations
 
-| Command | What it does |
-| --- | --- |
-| `npm run setup` | Installs root, server, and client packages |
-| `npm run dev` | Starts API (default port 5000) and Vite on port 5173 |
-| `npm run dev:server` | Backend only |
-| `npm run dev:client` | Frontend only |
-| `npm run build` | Production build of the React client |
+- Demo Mode uses bundled sample material; unmatched topics receive labelled general study outlines rather than live, topic-specific answers.
+- Live AI depends on a valid Gemini key, provider model access, network availability, and provider quota.
+- Student data is stored in browser `localStorage`; there is no account, cross-device sync, or server-side persistence.
+- This project is not a BharatCode model integration; its hackathon association and submission notes are in `BharatCode.txt`.
 
 ## Screenshots
 
-Add screenshots here after you run the app locally (dashboard, assistant with Ohm's Law, quiz results, planner, notes, dark theme).
+Add screenshots here before submission (for example, dashboard, explanation/demo badge, quiz results, planner, notes, and mobile navigation).
 
-## Licence
+## Repository and hackathon submission
 
-Built as a student hackathon project. Use and modify for learning and the BharatCode Build League.
+Keep `BharatCode.txt` in the repository root. Review `git status` before committing and confirm that `.env` files and credentials are not staged. Do not submit or publish until you have reviewed the repository contents and the current official [BharatCode Build League](https://bharatcode.ai/hackathon) instructions.

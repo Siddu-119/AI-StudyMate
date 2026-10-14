@@ -5,9 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "node --watch index.js",
-    "start": "node index.js"
+    "start": "node index.js",
+    "check": "node --check index.js && node --check demo.js && node --check knowledge.js",
+    "test": "node --test && node check-demo.mjs"
   },
   "dependencies": {
+    "@google/genai": "^2.29.1",
     "ai-studymate": "file:..",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",

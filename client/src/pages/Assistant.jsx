@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { LoaderCircle, MessageCircleQuestion, RotateCcw, Sparkles } from "lucide-react";
 import { useApp } from "../context/AppContext.jsx";
 import { askFollowUp, explainTopic } from "../lib/api";
@@ -15,14 +15,17 @@ export default function Assistant() {
   const [followQuestion, setFollowQuestion] = useState("");
   const [followAnswer, setFollowAnswer] = useState(null);
   const [errors, setErrors] = useState({});
-  const [requestError, setRequestError] = useState("");
+  const [requestError, setRequestError] = useState(null);
+  const explainPending = useRef(false);
+  const followPending = useRef(false);
 
   const modeLabel = useMemo(() => {
-    if (result?.mode === "live") return "Generated with BharatCode";
+    if (result?.mode === "live") return "Generated with Google Gemini";
     return "Demo Mode explanation";
   }, [result]);
 
   const runExplain = async () => {
+    if (explainPending.current) return;
     const nextErrors = {};
     if (!topic.trim()) nextErrors.topic = "Enter a topic, for example “Ohm's Law” or “binary search”.";
     setErrors(nextErrors);
@@ -31,18 +34,24 @@ export default function Assistant() {
       return;
     }
 
+    explainPending.current = true;
     setLoading(true);
     setFollowAnswer(null);
-    setRequestError("");
+    setRequestError(null);
     try {
       const data = await explainTopic({ subject, topic: topic.trim(), difficulty });
       setResult(data);
       logActivity(`Asked the assistant about ${topic.trim()} (${subject}).`);
-      notify(data.mode === "live" ? "Explanation ready from the model API." : "Demo explanation ready.");
+      notify(data.mode === "live" ? "Explanation ready from Google Gemini." : "Demo explanation ready.");
     } catch (error) {
-      setRequestError(error.message || "Could not generate an explanation.");
+      setRequestError({
+        message: error.message || "Could not generate an explanation.",
+        retryable: Boolean(error.retryable),
+        retry: runExplain,
+      });
       notify(error.message || "Could not generate an explanation.", "error");
     } finally {
+      explainPending.current = false;
       setLoading(false);
     }
   };
@@ -53,12 +62,14 @@ export default function Assistant() {
   };
 
   const sendFollowUp = async (question) => {
+    if (followPending.current) return;
     if (!question.trim()) {
       notify("Type a follow-up question first.", "error");
       return;
     }
+    followPending.current = true;
     setFollowLoading(true);
-    setRequestError("");
+    setRequestError(null);
     try {
       const data = await askFollowUp({
         subject,
@@ -70,9 +81,14 @@ export default function Assistant() {
       setFollowQuestion("");
       logActivity(`Asked a follow-up on ${topic.trim() || "the current topic"}.`);
     } catch (error) {
-      setRequestError(error.message || "Follow-up failed.");
+      setRequestError({
+        message: error.message || "Follow-up failed.",
+        retryable: Boolean(error.retryable),
+        retry: () => sendFollowUp(question),
+      });
       notify(error.message || "Follow-up failed.", "error");
     } finally {
+      followPending.current = false;
       setFollowLoading(false);
     }
   };
@@ -145,10 +161,18 @@ export default function Assistant() {
 
       {requestError ? (
         <section className="panel error-panel" role="alert">
-          <p>{requestError}</p>
-          <button className="btn ghost" type="button" onClick={runExplain}>
-            <RotateCcw size={16} /> Retry
-          </button>
+          <h3>Unable to complete your request</h3>
+          <p>{requestError.message}</p>
+          {requestError.retryable ? (
+            <button
+              className="btn ghost"
+              type="button"
+              onClick={requestError.retry}
+              disabled={loading || followLoading}
+            >
+              <RotateCcw size={16} /> Retry
+            </button>
+          ) : null}
         </section>
       ) : null}
 
@@ -158,7 +182,7 @@ export default function Assistant() {
           <h3>Ask a real class question</h3>
           <p className="muted">
             Try “Explain Ohm&apos;s Law”, “binary search”, “quadratic formula”, or a follow-up in your own words.
-            Demo Mode uses built-in study articles; live mode needs a BharatCode key on the server.
+            Demo Mode uses built-in study articles; live mode needs a Google Gemini API key on the server.
           </p>
         </section>
       ) : null}
@@ -220,7 +244,13 @@ export default function Assistant() {
           </div>
           <div className="chip-row wrap">
             {(followAnswer?.followUps?.length ? followAnswer.followUps : result.followUps || []).map((item) => (
-              <button key={item} type="button" className="ghost-chip clickable" onClick={() => sendFollowUp(item)}>
+              <button
+                key={item}
+                type="button"
+                className="ghost-chip clickable"
+                onClick={() => sendFollowUp(item)}
+                disabled={followLoading}
+              >
                 <MessageCircleQuestion size={14} />
                 {item}
               </button>
@@ -254,7 +284,7 @@ export default function Assistant() {
               {followAnswer.mode === "demo" ? (
                 <span className="mode-chip demo">Demo Mode follow-up</span>
               ) : (
-                <span className="mode-chip live">Live follow-up</span>
+                <span className="mode-chip live">Live Google Gemini follow-up</span>
               )}
               {followAnswer.answer}
             </div>

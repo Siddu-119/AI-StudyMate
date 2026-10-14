@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { GraduationCap, LoaderCircle, RotateCcw } from "lucide-react";
 import { useApp } from "../context/AppContext.jsx";
 import { generateQuiz } from "../lib/api";
@@ -16,21 +16,24 @@ export default function Quiz() {
   const [submitted, setSubmitted] = useState(false);
   const [score, setScore] = useState(null);
   const [topicError, setTopicError] = useState("");
-  const [requestError, setRequestError] = useState("");
+  const [requestError, setRequestError] = useState(null);
+  const quizPending = useRef(false);
 
   const startQuiz = async (event) => {
     event?.preventDefault();
+    if (quizPending.current) return;
     if (!topic.trim()) {
       setTopicError("Enter a topic so the quiz has something to test.");
       notify("Enter a topic so the quiz has something to test.", "error");
       return;
     }
     setTopicError("");
+    quizPending.current = true;
     setLoading(true);
     setSubmitted(false);
     setScore(null);
     setAnswers({});
-    setRequestError("");
+    setRequestError(null);
     try {
       const data = await generateQuiz({
         subject,
@@ -43,11 +46,15 @@ export default function Quiz() {
       }
       setQuiz(data);
       logActivity(`Generated a ${data.questions.length}-question quiz on ${topic.trim()}.`);
-      notify(data.mode === "live" ? "Quiz ready from the model API." : "Demo quiz ready.");
+      notify(data.mode === "live" ? "Quiz ready from Google Gemini." : "Demo quiz ready.");
     } catch (error) {
-      setRequestError(error.message || "Could not generate a quiz.");
+      setRequestError({
+        message: error.message || "Could not generate a quiz.",
+        retryable: Boolean(error.retryable),
+      });
       notify(error.message || "Could not generate a quiz.", "error");
     } finally {
+      quizPending.current = false;
       setLoading(false);
     }
   };
@@ -165,10 +172,12 @@ export default function Quiz() {
 
       {requestError ? (
         <section className="panel error-panel" role="alert">
-          <p>{requestError}</p>
-          <button className="btn ghost" type="button" onClick={startQuiz}>
-            <RotateCcw size={16} /> Retry
-          </button>
+          <p>{requestError.message}</p>
+          {requestError.retryable ? (
+            <button className="btn ghost" type="button" onClick={startQuiz} disabled={loading}>
+              <RotateCcw size={16} /> Retry
+            </button>
+          ) : null}
         </section>
       ) : null}
 
@@ -188,7 +197,7 @@ export default function Quiz() {
           <div className="panel-head">
             <h3>{quiz.title}</h3>
             <span className={`mode-chip ${quiz.mode === "live" ? "live" : "demo"}`}>
-              {quiz.mode === "live" ? "Live BharatCode API" : "Demo Mode quiz"}
+              {quiz.mode === "live" ? "Live Google Gemini" : "Demo Mode quiz"}
             </span>
           </div>
 

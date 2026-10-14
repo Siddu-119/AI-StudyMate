@@ -81,9 +81,9 @@ export default function Settings() {
         <h3>AI connection</h3>
         <p className="muted">{aiStatus.message}</p>
         <p className="muted small">
-          To use the official BharatCode model, copy `.env.example` to `server/.env`, add your key from
-          https://bharatcode.ai/account, restart the backend, and refresh this page. The key never goes in the
-          frontend.
+          To use Google Gemini, add your key from https://aistudio.google.com/ to `server/.env`, restart the
+          backend, and refresh this page. The key never goes in the frontend. Set `AI_DEMO_MODE=true` in
+          `server/.env` to explicitly use labelled local sample content instead.
         </p>
       </section>
 

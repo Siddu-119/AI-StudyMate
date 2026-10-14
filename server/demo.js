@@ -40,7 +40,7 @@ function fallbackExplain({ subject, topic, difficulty }) {
       `3. Formula or process — if ${cleanSubject} uses an equation here, write it and name each symbol. If it is a process, number the stages.`,
       `4. Worked example — pick the smallest numbers or shortest case that still uses ${cleanTopic} correctly.`,
       `5. Check — restate ${cleanTopic} without notes. If you cannot, the missing piece is usually a definition, a unit, or a step — not “the whole chapter”.`,
-      "This outline is labelled Demo Mode. Add a BharatCode API key on the server for a live model explanation of uncommon topics.",
+      "This outline is labelled Demo Mode. Add a Gemini API key on the server for a live model explanation of uncommon topics.",
     ].join("\n\n"),
     formulas: [],
     examples: [
@@ -119,7 +119,7 @@ export function demoQuiz(payload) {
     {
       question: `Demo Mode does not have a full question bank for “${cleanTopic}”. What should you still do?`,
       options: [
-        "Treat this as labelled demo practice, then check your textbook or enable the live BharatCode API for a custom quiz.",
+        "Treat this as labelled demo practice, then check your textbook or configure Google Gemini for a custom quiz.",
         "Assume the live model already ran.",
         "Score the quiz as if it contained official board questions on this exact wording.",
         "Ignore the Demo Mode badge.",
@@ -194,7 +194,7 @@ export function demoFollowUp(payload) {
         ? `Keep this in view: ${payload.previousSummary}`
         : `Stay inside ${payload.subject || "the subject"}: definition, relation or process, units, example.`,
       "",
-      `Answer the follow-up by substituting into the relevant formula or by tracing the next step of the process — not by giving generic study advice. If Demo Mode has no dedicated article for ${cleanTopic}, check your class notes or enable the live BharatCode API.`,
+      `Answer the follow-up by substituting into the relevant formula or by tracing the next step of the process — not by giving generic study advice. If Demo Mode has no dedicated article for ${cleanTopic}, check your class notes or configure Google Gemini.`,
     ].join("\n"),
     followUps: [
       `What formula or process does ${cleanTopic} use?`,

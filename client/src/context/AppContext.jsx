@@ -29,9 +29,9 @@ export function AppProvider({ children }) {
   const [quizHistory, setQuizHistory] = useState(initial.quizHistory);
   const [toasts, setToasts] = useState([]);
   const [aiStatus, setAiStatus] = useState({
-    mode: "demo",
+    mode: "unconfigured",
     configured: false,
-    message: "Checking AI status…",
+    message: "Checking the AI connection…",
   });
   const [resolvedTheme, setResolvedTheme] = useState(() => resolveTheme(initial.settings.theme));
 
@@ -72,7 +72,7 @@ export function AppProvider({ children }) {
       .then(setAiStatus)
       .catch(() =>
         setAiStatus({
-          mode: "demo",
+          mode: "unconfigured",
           configured: false,
           message: "Could not reach the local server. Start the backend, then refresh.",
         })

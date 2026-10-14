@@ -47,7 +47,11 @@ export default function Dashboard() {
           </p>
           <div className="chip-row">
             <span className={`mode-chip ${aiStatus.mode}`}>
-              {aiStatus.mode === "live" ? "Live BharatCode API" : "Demo Mode"}
+              {aiStatus.mode === "live"
+                ? "Live Google Gemini"
+                : aiStatus.mode === "demo"
+                  ? "Demo Mode"
+                  : "AI not configured"}
             </span>
             <span className="ghost-chip">Daily goal · {goal} hour{goal === 1 ? "" : "s"}</span>
           </div>

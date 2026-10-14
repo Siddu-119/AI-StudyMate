@@ -23,26 +23,20 @@ MAIN FEATURES
 - Local storage for tasks, notes, preferences, quiz history, and activity so data survives a page refresh
 - Form validation, toast notifications, responsive sidebar, and working buttons on laptop and mobile
 
-BHARATCODE MODEL INTEGRATION (PREPARED; LIVE CALLS NEED A KEY)
-The Node.js Express backend is written against official BharatCode Model API documentation (https://bharatcode.ai/build):
+AI PROVIDER (GOOGLE GEMINI)
+The current Node.js Express backend uses Google's @google/genai SDK and the gemini-2.5-flash model:
 
-- Base URL: https://bharatcode.ai/api/model/v1
-- Authentication: Authorization: Bearer <BHARATCODE_API_KEY>
-- Key source: server-side environment variable only (never in frontend code or this file)
-- Developer keys: https://bharatcode.ai/account
-- Default model ID: qwen-3.8-27b (coding, reasoning; student / Lite / Pro access)
-- Optional Pro model ID: deepseek-v4.1-flash (documented as Pro-only; not the default)
-- Endpoints used by this project:
-  - GET /models — confirm eligible model IDs
-  - POST /chat/completions — explanations and quiz JSON using OpenAI-compatible messages
-- The model field is required on every generation request
-- Keys stay on the server. The React app only calls this project's /api routes
+- Model configuration: GEMINI_MODEL in server/.env (default gemini-2.5-flash)
+- Key source: GEMINI_API_KEY in server/.env only (never in frontend code or this file)
+- Key management: https://aistudio.google.com/
+- The React app calls this project's /api routes; it never receives the Gemini key
+- This is a Google Gemini integration, not a BharatCode model integration
 
-UNTIL CREDENTIALS ARE CONFIGURED
-If BHARATCODE_API_KEY is missing, the app runs in a clearly labelled Demo Mode. Demo Mode uses local study content (including dedicated articles such as Ohm's Law: V = I × R) so the interface can be tested without a live key. Demo Mode is not the BharatCode model. Live generation is only claimed after a real key is added and a request to the official API succeeds.
+OPTIONAL DEMO MODE
+AI_DEMO_MODE defaults to false. Set AI_DEMO_MODE=true on the server to use clearly labelled local sample explanations, quizzes, and follow-ups without an API key or external model call. If live mode is selected but no key is configured, generation returns an explicit configuration error. A failed live request never becomes a fake demo response.
 
 HOW TO RUN
-See README.md for Windows commands, local testing steps, port conflict guidance, and how to publish this repo on GitHub. Do not put secrets, tokens, or private user data in this file or in the public repository.
+See README.md for Windows commands, local testing steps, port conflict guidance, deployment notes, and how to publish this repo on GitHub. Do not put secrets, tokens, or private user data in this file or in the public repository.
 
 HACKATHON NOTES
 Category: Learning & education (tutor / practice partner / study companion).
