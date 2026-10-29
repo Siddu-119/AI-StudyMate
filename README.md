@@ -46,8 +46,10 @@ AI-StudyMate/
 ### 1. Clone the Repository
 
 ```bash
-git clone YOUR_GITHUB_REPOSITORY_URL
+
+git clone https://github.com/Siddu-119/AI-StudyMate.git
 cd AI-StudyMate
+
 ```
 
 ### 2. Install Dependencies
